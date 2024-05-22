@@ -47,14 +47,35 @@ module "lambda" {
   depends_on = [ module.ecr ]
 }
 
-module "s3_event" {
+module "s3_event_resize" {
   source = "../../modules/s3_event"
 
-  for_each = { for lambda in local.lambdas : lambda.name => lambda }
 
   bucket_name          = module.s3.bucket_name
   bucket_arn           = module.s3.bucket_arn
-  lambda_function_arn  = module.lambda[each.key].lambda_function_arn
-  lambda_function_name = each.value.name
+  lambda_function_arn  = module.lambda["resize"].lambda_function_arn
+  lambda_function_name = "resize"
+  depends_on = [ module.lambda, module.s3 ]
+}
+
+module "s3_event_black-white" {
+  source = "../../modules/s3_event"
+
+
+  bucket_name          = module.s3.bucket_name
+  bucket_arn           = module.s3.bucket_arn
+  lambda_function_arn  = module.lambda["black-white"].lambda_function_arn
+  lambda_function_name = "black-white"
+  depends_on = [ module.lambda, module.s3 ]
+}
+
+module "s3_event_crop" {
+  source = "../../modules/s3_event"
+
+
+  bucket_name          = module.s3.bucket_name
+  bucket_arn           = module.s3.bucket_arn
+  lambda_function_arn  = module.lambda["crop"].lambda_function_arn
+  lambda_function_name = "crop"
   depends_on = [ module.lambda, module.s3 ]
 }

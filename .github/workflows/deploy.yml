@@ -6,12 +6,12 @@ on:
       - 'terraform/environments/prod/**'
       - 'modules/**'
       - 'lambda/**'
+workflow_dispatch:
 
 jobs:
   validate:
     name: Validate
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout code
         uses: actions/checkout@v2

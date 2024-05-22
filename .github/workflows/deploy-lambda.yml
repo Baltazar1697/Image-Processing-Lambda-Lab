@@ -32,5 +32,5 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ AWS_DEFAULT_REGION }}.amazonaws.com/${{ matrix.lambda_name }}:latest lambda/${{ matrix.lambda_name }} --build-arg lambda_name=${{ matrix.lambda_name }}
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ AWS_DEFAULT_REGION }}.amazonaws.com/${{ matrix.lambda_name }}:latest
+          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ matrix.lambda_name }}:latest lambda/${{ matrix.lambda_name }} --build-arg lambda_name=${{ matrix.lambda_name }}
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/${{ matrix.lambda_name }}:latest

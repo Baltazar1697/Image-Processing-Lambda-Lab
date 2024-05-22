@@ -64,8 +64,6 @@ jobs:
           name: terraform-artifacts
           path: |
             ./terraform/environments/prod/plan.cache
-            ./terraform/environments/prod/.terraform.lock.hcl
-            ./terraform/environments/prod/.terraform
 
   apply:
     name: Apply
@@ -80,6 +78,10 @@ jobs:
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: latest
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform/environments/prod
 
       - name: Download Plan and Lockfile
         uses: actions/download-artifact@v2

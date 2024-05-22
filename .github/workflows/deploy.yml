@@ -6,7 +6,7 @@ on:
       - 'terraform/environments/prod/**'
       - 'modules/**'
       - 'lambda/**'
-workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   validate:

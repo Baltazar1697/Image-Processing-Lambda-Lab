@@ -1,13 +1,13 @@
 name: CI/CD Pipeline
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'terraform/environments/prod/**'
       - 'modules/**'
       - 'lambda/**'
       - '.github/workflows/**'
-  workflow_dispatch:
 
 jobs:
   validate:
@@ -33,7 +33,6 @@ jobs:
   plan:
     name: Plan
     runs-on: ubuntu-latest
-    environment: Production
     needs: validate
     steps:
       - name: Checkout code
@@ -43,6 +42,7 @@ jobs:
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: latest
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -83,6 +83,13 @@ jobs:
         with:
           name: terraform-plan
           path: ./terraform/environments/prod
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: Terraform Apply
         run: terraform apply -auto-approve plan.cache

@@ -10,7 +10,6 @@ jobs:
   docker_build:
     name: Docker Build
     runs-on: ubuntu-latest
-    environment: Production
     strategy:
       matrix:
         lambda_name: [resize, crop, black-white]

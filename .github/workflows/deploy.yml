@@ -6,6 +6,7 @@ on:
       - 'terraform/environments/prod/**'
       - 'modules/**'
       - 'lambda/**'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 jobs:

@@ -1,0 +1,30 @@
+name: CI/CD Pipeline for Lambda
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/deploy-lambda.yml'
+      - 'lambda/**'
+jobs:
+  docker_build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    environment: Production
+    strategy:
+      matrix:
+        lambda_name: [resize, crop, black-white]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to AWS ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and Push Docker image
+        run: |
+          docker build -t ${{ secrets.ECR_REPO_URL }}:${{ matrix.lambda_name }} lambda/${{ matrix.lambda_name }} --build-arg lambda_name=${{ matrix.lambda_name }}
+          docker push ${{ secrets.ECR_REPO_URL }}:${{ matrix.lambda_name }}

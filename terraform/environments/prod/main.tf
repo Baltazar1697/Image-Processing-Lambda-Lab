@@ -54,7 +54,7 @@ module "s3_event" {
 
   bucket_name          = module.s3.bucket_name
   bucket_arn           = module.s3.bucket_arn
-  lambda_function_arn  = module.lambda[each.key].lambda_function_name
+  lambda_function_arn  = module.lambda[each.key].lambda_function_arn
   lambda_function_name = each.value.name
   depends_on = [ module.lambda, module.s3 ]
 }

@@ -1,0 +1,124 @@
+---
+stages:
+  - validate
+  - plan
+  - apply
+  - build
+
+image: registry.gitlab.com/gitlab-org/terraform-images/stable:latest
+
+
+.tf_template: &tf_template
+  variables:
+    TF_ROOT: ${CI_PROJECT_DIR}/terraform/environments/${env}
+    TF_STATE_NAME: ${env}
+    TF_PLAN: plan.cache
+    TF_PLAN_JSON: plan.json
+  resource_group: ${TF_STATE_NAME}
+  cache:
+    key: "${TF_ROOT}"
+    paths:
+      - ${TF_ROOT}/.terraform/
+  before_script:
+    - echo ${TF_ROOT}
+    - cd ${TF_ROOT}
+
+.changes-prod:
+  only:
+    changes:
+      - terraform/environments/prod/**
+      - modules/**
+
+.terraform-init: &terraform-init
+  - gitlab-terraform init
+
+.terraform-validate: &terraform-validate
+  - gitlab-terraform validate
+
+.validate-template: &validate-template
+  stage: validate
+  allow_failure: false
+  script:
+    - *terraform-init
+    - *terraform-validate
+
+.plan-template: &plan-template
+  stage: plan
+  allow_failure: false
+  script:
+    - *terraform-init
+    - gitlab-terraform plan
+    - gitlab-terraform plan-json
+  artifacts:
+    name: ${TF_STATE_NAME}
+    paths:
+      - ${TF_ROOT}/${TF_PLAN}
+      - ${TF_ROOT}/.terraform
+    reports:
+      terraform: ${TF_ROOT}/${TF_PLAN_JSON}
+
+.apply-template: &apply-template
+  stage: apply
+  allow_failure: false
+  when: manual
+  script:
+    - gitlab-terraform apply -auto-approve
+    - gitlab-terraform output -json
+
+.docker_login: &docker-login
+  - apk add --no-cache aws-cli bash git
+  - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+
+validate:prod:
+  variables:
+    env: prod
+  extends:
+    - .tf_template
+    - .validate-template
+    - .changes-prod
+  needs: []
+  environment:
+    name: ${TF_STATE_NAME}
+
+plan:prod:
+  variables:
+    env: prod
+  extends:
+    - .tf_template
+    - .plan-template
+    - .changes-prod
+  needs: ["validate:prod"]
+  when: manual
+  environment:
+    name: ${TF_STATE_NAME}
+
+apply:prod:
+  variables:
+    env: prod
+  extends:
+    - .tf_template
+    - .apply-template
+  needs: ["plan:prod"]
+  environment:
+    name: ${TF_STATE_NAME}
+
+docker-build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_DRIVER: overlay2
+  only:
+    changes:
+      - lambda/**
+  parallel:
+    matrix:
+      - LAMBDA_NAME: "resize"
+      - LAMBDA_NAME: "crop"
+      - LAMBDA_NAME: "black-white"
+  before_script:
+    - *docker-login
+  script:
+    - docker build -t $ECR_REPO_URL:latest lambda/$LAMBDA_NAME --build-arg lambda_name=$LAMBDA_NAME
+    - docker push $ECR_REPO_URL:latest

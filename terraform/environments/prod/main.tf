@@ -2,7 +2,7 @@ terraform {
   backend "s3" {
     bucket = "lambda-testing-state-bucket"
     key    = "prod/terraform.tfstate"
-    region = "eu-north-1"
+    region = "us-west-2"
   }
 }
 provider "aws" {

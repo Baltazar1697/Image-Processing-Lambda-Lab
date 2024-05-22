@@ -65,6 +65,7 @@ jobs:
           path: |
             ./terraform/environments/prod/plan.cache
             ./terraform/environments/prod/.terraform.lock.hcl
+            ./terraform/environments/prod/.terraform
 
   apply:
     name: Apply

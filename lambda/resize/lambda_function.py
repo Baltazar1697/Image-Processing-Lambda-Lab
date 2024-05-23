@@ -3,7 +3,7 @@
 import json
 import urllib.parse
 import boto3
-import os, sys
+import os
 from io import BytesIO
 from PIL import Image
 print('Loading function')

@@ -10,17 +10,26 @@ print('Loading function')
 
 s3 = boto3.client('s3')
 
-def get_object_s3(bucket,key):
+def get_object_s3(bucket, key):
     file_byte_string = s3.get_object(Bucket=bucket, Key=key)['Body'].read()
     return Image.open(BytesIO(file_byte_string))
 
-def upload_to_s3(bucket,key,image):
+def upload_to_s3(bucket, key, image):
     buffer = BytesIO()
-    image.save(buffer, self.__get_safe_ext(key))
+    image.save(buffer, get_safe_ext(key))
     buffer.seek(0)
-    sent_data = self.s3.put_object(Bucket=bucket, Key="output/resized_"+key, Body=buffer)
+    sent_data = s3.put_object(Bucket=bucket, Key=f"output/resized_{key}", Body=buffer.getvalue())
     if sent_data['ResponseMetadata']['HTTPStatusCode'] != 200:
-        raise S3ImagesUploadFailed('Failed to upload image {} to bucket {}'.format(key, bucket))
+        raise Exception(f'Failed to upload image {key} to bucket {bucket}')
+
+def get_safe_ext(key):
+    ext = os.path.splitext(key)[1]
+    if ext.lower() in ['.jpg', '.jpeg']:
+        return 'JPEG'
+    elif ext.lower() == '.png':
+        return 'PNG'
+    else:
+        raise ValueError(f'Unsupported file extension: {ext}')
 
 def lambda_handler(event, context):
     bucket_name = event['Records'][0]['s3']['bucket']['name']

@@ -9,3 +9,7 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "sns_topic_arn" {
+  type = string
+}

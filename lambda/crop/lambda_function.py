@@ -32,9 +32,8 @@ def get_safe_ext(key):
         raise ValueError(f'Unsupported file extension: {ext}')
 
 def lambda_handler(event, context):
-    #print("Received event: " + json.dumps(event, indent=2))
-
-    bucket_name = event['Records'][0]['s3']['bucket']['name']
+    print(event)
+    bucket_name = event['Records'][0]['Sns']['Message']['Records'][0]['s3']['bucket']['name']
     bucket = s3.bucket
     key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
     try:

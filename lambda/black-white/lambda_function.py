@@ -31,7 +31,8 @@ def get_safe_ext(key):
         raise ValueError(f'Unsupported file extension: {ext}')
 
 def lambda_handler(event, context):
-    bucket_name = event['Records'][0]['s3']['bucket']['name']
+    print(event)
+    bucket_name = event['Records'][0]['Sns']['Message']['Records'][0]['s3']['bucket']['name']
     key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
     try:
         image = get_object_s3(bucket_name, key)

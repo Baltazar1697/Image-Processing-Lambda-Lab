@@ -3,12 +3,12 @@ terraform {
     bucket  = "lambda-testing-state-bucket"
     key     = "prod/terraform.tfstate"
     region  = "us-west-2"
-    profile = "k8s-test-project"
+    # profile = "k8s-test-project"
   }
 }
 provider "aws" {
   region = "eu-north-1"
-  profile = "k8s-test-project"
+  # profile = "k8s-test-project"
 }
 
 locals {

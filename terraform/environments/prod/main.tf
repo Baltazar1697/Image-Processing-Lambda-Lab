@@ -3,12 +3,12 @@ terraform {
     bucket  = "lambda-testing-state-bucket"
     key     = "prod/terraform.tfstate"
     region  = "us-west-2"
-    # profile = "k8s-test-project"
+    profile = "k8s-test-project"
   }
 }
 provider "aws" {
   region = "eu-north-1"
-  # profile = "k8s-test-project"
+  profile = "k8s-test-project"
 }
 
 locals {
@@ -68,4 +68,12 @@ module "sns_subscription" {
   topic_arn  = module.sns.sns_topic_arn
   endpoint   = module.lambda[each.key].lambda_function_arn
   depends_on = [module.sns, module.lambda]
+}
+
+module "s3_policy_attachment" {
+  source = "../../modules/s3_policy_attachment"
+  bucket_name = module.s3.bucket_name
+  lambda_execution_role_arn = module.lambda.lambda_execution_role_arn
+  lambda_execution_role_name = module.lambda.lambda_execution_role_name
+  depends_on = [ module.s3, module.lambda ]
 }

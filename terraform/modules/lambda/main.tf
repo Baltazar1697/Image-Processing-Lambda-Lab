@@ -1,7 +1,7 @@
 resource "aws_lambda_function" "this" {
   function_name = var.function_name
   package_type  = "Image"
-  role          = aws_iam_role.lambda_execution.arn
+  role          = aws_iam_role.lambda_execution_role.arn
   image_uri     = var.image_uri
   timeout       = var.lambda_timeout
 
@@ -10,7 +10,7 @@ resource "aws_lambda_function" "this" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.lambda_execution
+    aws_iam_role_policy_attachment.lambda_execution_role
   ]
 }
 
@@ -22,7 +22,7 @@ resource "aws_lambda_permission" "allow_sns" {
   source_arn    = var.sns_topic_arn
 }
 
-resource "aws_iam_role" "lambda_execution" {
+resource "aws_iam_role" "lambda_execution_role" {
   name = var.function_name
 
   assume_role_policy = jsonencode({
@@ -40,7 +40,8 @@ resource "aws_iam_role" "lambda_execution" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_execution" {
-  role       = aws_iam_role.lambda_execution.name
+resource "aws_iam_role_policy_attachment" "lambda_execution_role" {
+  role       = aws_iam_role.lambda_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
+

@@ -32,21 +32,27 @@ def get_safe_ext(key):
         raise ValueError(f'Unsupported file extension: {ext}')
 
 def lambda_handler(event, context):
-    print(event)
-    bucket_name = event['Records'][0]['Sns']['Message']['Records'][0]['s3']['bucket']['name']
-    bucket = s3.bucket
-    key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
+    print("Event message: ", event)
+    sns_message = event['Records'][0]['Sns']['Message']
+    print("SNS message: ", sns_message)
+    
+    # Parse the JSON string in the SNS message
+    message = json.loads(sns_message)
+    
+    print("Parsed message: ", message)
+    bucket_name = message['Records'][0]['s3']['bucket']['name']
+    key = urllib.parse.unquote_plus(message['Records'][0]['s3']['object']['key'], encoding='utf-8')
     try:
         
-        image = get_object_s3(bucket,key)
+        image = get_object_s3(bucket_name,key)
         
         newsize = (300, 300)
         resized = image.resize(newsize)
         
-        upload_to_s3(bucket,key,resized)
+        upload_to_s3(bucket_name,key,resized)
 
     except Exception as e:
         print(e)
-        print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
+        print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket_name))
         raise e
     return 0

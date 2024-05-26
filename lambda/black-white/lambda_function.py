@@ -32,10 +32,15 @@ def get_safe_ext(key):
 
 def lambda_handler(event, context):
     print("Event message: ", event)
-    print("Event records: ", event['Records'][0])
-    print("Event records message 0: ", event['Records'][0]['Sns']['Message']['Records'][0])
-    bucket_name = event['Records'][0]['Sns']['Message']['Records'][0]['s3']['bucket']['name']
-    key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
+    sns_message = event['Records'][0]['Sns']['Message']
+    print("SNS message: ", sns_message)
+    
+    # Parse the JSON string in the SNS message
+    message = json.loads(sns_message)
+    
+    print("Parsed message: ", message)
+    bucket_name = message['Records'][0]['s3']['bucket']['name']
+    key = urllib.parse.unquote_plus(message['Records'][0]['s3']['object']['key'], encoding='utf-8')
     try:
         image = get_object_s3(bucket_name, key)
         

@@ -70,10 +70,18 @@ module "sns_subscription" {
   depends_on = [module.sns, module.lambda]
 }
 
-module "s3_policy_attachment" {
-  source = "../../modules/s3_policy_attachment"
-  bucket_name = module.s3.bucket_name
-  lambda_execution_role_arn = module.lambda.lambda_execution_role_arn
-  lambda_execution_role_name = module.lambda.lambda_execution_role_name
+module "lambda_access_policy" {
+  source = "../../modules/lambda_access_policy"
+  for_each = { for lambda in local.lambdas : lambda.name => lambda }
+  
+  s3_access_policy_arn = module.s3_access_policy.s3_access_policy_arn
+  lambda_execution_role_name = module.lambda[each.key].lambda_execution_role_name
   depends_on = [ module.s3, module.lambda ]
+}
+
+module "s3_access_policy" {
+  source = "../../modules/s3_access_policy"
+  bucket_name = module.s3.bucket_name
+  lambda_execution_role_arn = [for lambda in module.lambda : lambda.lambda_execution_role_arn]
+
 }
